@@ -1,7 +1,7 @@
 import numpy
 import os
 
-def unite_small_files(n_files, path, prefix, B_rms, , suffix = 'txt'):
+def unite_small_files(n_files, path, prefix, B_rms, suffix = 'txt'):
     '''Reads all small files with the same characteristics from a folder,
     Joins them into a single larger file and returns the corresponding
     array.
