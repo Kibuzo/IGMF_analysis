@@ -29,10 +29,15 @@ class spectrum:
       '''
       return self.flux_vector
    
-   def flux_err(self):
-      '''number of photons in the energy bin
+   def flux_err_hi(self):
+      '''Upper bound of the error bar
       '''
-      return self.flux_err_vector
+      return self.flux_err_high
+
+   def flux_err_lo(self):
+      '''Lower bound of the error bar
+      '''
+      return self.flux_err_low
    
    def ts(self):
       '''self-explanatory
@@ -70,7 +75,8 @@ class fermi(spectrum):
       self.hdul.info()
       self.scaling = 1/units.MeV.to(units.GeV)#From 1/MeV to 1/GeV
       self.flux_vector = self.hdul[1].data['dnde']*self.scaling
-      self.flux_err_vector = self.hdul[1].data['dnde_err']*self.scaling
+      self.flux_err_lo = self.hdul[1].data['dnde_err']*self.scaling
+      self.flux_err_hi = self.flux_err_lo
       self.ts_vector = self.hdul[1].data['ts']
       self.flux_ulim_vector = self.hdul[1].data['dnde_ul']*self.scaling
       self.energy_vector = self.hdul[1].data['e_ref']/self.scaling
@@ -95,18 +101,6 @@ class veritas(spectrum):
       self.flux_err_low = numpy.array([1.2e-11, 6.13e-12, 3.04e-12, 2.15e-12,\
           1.49e-12, 1.28e-12, 1.15e-12])/self.scaling
       
-      def flux_err_hi(self):
-         '''Upper bound of the error bar
-         '''
-         return self.flux_err_high
-
-      def flux_err_lo(self):
-         '''Lower bound of the error bar
-         '''
-         return self.flux_err_low
-
-      def flux_err(self):
-         pass
 
 class hess(spectrum):
    ''' This is sadly based on vectors instead of files.
@@ -126,17 +120,4 @@ class hess(spectrum):
           /self.scaling
       self.flux_err_low = numpy.array([5.87e-12, 2.35e-12, 1.69e-12, 9.54e-13,\
           7.11e-13, 6.01e-13, 3.24e-13, 6.13e-13, 0, 0, 0, 0])/self.scaling
-      
-      def flux_err_hi(self):
-         '''Upper bound of the error bar
-         '''
-         return self.flux_err_high
-
-      def flux_err_lo(self):
-         '''Lower bound of the error bar
-         '''
-         return self.flux_err_low
-
-      def flux_err(self):
-         pass
 
