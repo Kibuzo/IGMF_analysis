@@ -1,7 +1,6 @@
 from astropy.io import fits
 from astropy import units
 import numpy
-import matplotlib.pyplot as plt
 
 '''The old process worked like this:
 1) Open the fit scirpt (FittaCherenkiSomething) and execute it, mostly.
@@ -32,12 +31,12 @@ class spectrum:
    def flux_err_hi(self):
       '''Upper bound of the error bar
       '''
-      return self.flux_err_high
+      return self.flux_err_high/2
 
    def flux_err_lo(self):
       '''Lower bound of the error bar
       '''
-      return self.flux_err_low
+      return self.flux_err_low/2
    
    def ts(self):
       '''self-explanatory
@@ -63,6 +62,11 @@ class spectrum:
       '''self-explanatory
       '''
       return self.energy_min_vector
+   
+   def _has_ts(self):
+      '''Search for upper limits column
+      '''
+      return (self.ts is not None)
 
 
 class fermi(spectrum):
@@ -75,10 +79,10 @@ class fermi(spectrum):
       self.hdul.info()
       self.scaling = 1/units.MeV.to(units.GeV)#From 1/MeV to 1/GeV
       self.flux_vector = self.hdul[1].data['dnde']*self.scaling
-      self.flux_err_lo = self.hdul[1].data['dnde_err']*self.scaling
-      self.flux_err_hi = self.flux_err_lo
+      self.flux_err_low = self.hdul[1].data['dnde_err']*self.scaling*2
+      self.flux_err_high = self.flux_err_low
       self.ts_vector = self.hdul[1].data['ts']
-      self.flux_ulim_vector = self.hdul[1].data['dnde_ul']*self.scaling
+      self.flux_ulim_vector = self.hdul[1].data['dnde_ul']*self.scaling*2
       self.energy_vector = self.hdul[1].data['e_ref']/self.scaling
       self.energy_max_vector = self.hdul[1].data['e_max']/self.scaling
       self.energy_min_vector = self.hdul[1].data['e_min']/self.scaling
@@ -100,6 +104,8 @@ class veritas(spectrum):
           1.26e-11, 9.87e-12, 4e-12, 3.49e-12])/self.scaling
       self.flux_err_low = numpy.array([1.2e-11, 6.13e-12, 3.04e-12, 2.15e-12,\
           1.49e-12, 1.28e-12, 1.15e-12])/self.scaling
+      self.ts = None
+      self.flux_ulim_vector = []
       
 
 class hess(spectrum):
@@ -120,4 +126,6 @@ class hess(spectrum):
           /self.scaling
       self.flux_err_low = numpy.array([5.87e-12, 2.35e-12, 1.69e-12, 9.54e-13,\
           7.11e-13, 6.01e-13, 3.24e-13, 6.13e-13, 0, 0, 0, 0])/self.scaling
-
+      self.ts = None
+      self.flux_ulim_vector = []
+      
