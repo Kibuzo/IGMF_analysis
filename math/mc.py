@@ -26,6 +26,6 @@ def expcutoff_cdf(E, N0, index, divs, Ecut):
     '''
     expcutoff = cutoff(E, N0, index, Ecut)
     binned = numpy.histogram (expcutoff, divs)
-    CDF = numpy.cumsum (binned) / numpy.cumsum(binnes)[-1]
+    CDF = numpy.cumsum (binned) / numpy.cumsum(binned)[-1]
     return CDF
 

@@ -2,7 +2,7 @@ import numpy
 import os
 
 def _unite_small_files(n_files, file_path, prefix, B_rms, extension =\
-    '.txt',suffix = '_complete', overwrite = False):
+    '.txt',suffix='_complete', overwrite=False):
     '''Reads all small files with the same characteristics from a folder,
     Joins them into a single larger file, writes it in the same folder and 
     returns the corresponding file path and name.
@@ -43,8 +43,8 @@ def _unite_small_files(n_files, file_path, prefix, B_rms, extension =\
     print(f'Writing output file to {large_file}...') 
     return (large_file_path)
 
-def load_files(n_files, file_path, prefix, B_rms, extension = '.txt',\
-    suffix = '_complete'):
+def load_files(n_files, file_path, prefix, B_rms, extension='.txt',\
+    suffix='_complete'):
     ''' Designed to be chained with the output of unite_small_files, or
     directly with a single large file.
     '''
