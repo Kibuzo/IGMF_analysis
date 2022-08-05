@@ -11,11 +11,15 @@ import numpy
 4) Something in this file united all the vectors (Fermi, VERITAS, HESS) 
    and created xcombnine, ycombined, etc.
 
-We should really aim to rely on reading fits files for the Fermipy analysis 
-and use hand-made vectors only for the salvaged Cherenkov data so that a 
-new analysis can update the results on the fly. This might include also 
-extending the pipeline to newer data since >2 years have passed.
-This file exists for that specific reason.
+We are in the middle of rethinking the process entirely. 
+
+- Now The spectrum class is capable of reading the data and is ready to 
+host a plot method, a fit method, and accomodate for parameters so that 
+the user can read it.
+- The VERITAS/HESS columns will be soon written to a fits file and the 
+reading will be unified so that there will be only one spectrum class and
+will accept the file_path as argument
+- More methods to come.
 '''
 
 #file_name = '/media/kibuzo/80a7f701-fd11-4c0c-993a-76b511ae8b86/Backup HESS/Fermipy/FromScratch/SED.fits'
