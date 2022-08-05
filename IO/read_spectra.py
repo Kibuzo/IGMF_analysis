@@ -18,7 +18,7 @@ extending the pipeline to newer data since >2 years have passed.
 This file exists for that specific reason.
 '''
 
-file_name = '/media/kibuzo/80a7f701-fd11-4c0c-993a-76b511ae8b86/Backup HESS/Fermipy/FromScratch/SED.fits'
+#file_name = '/media/kibuzo/80a7f701-fd11-4c0c-993a-76b511ae8b86/Backup HESS/Fermipy/FromScratch/SED.fits'
 
 class spectrum:
    ''' Spectrum superclass containing a common interface and basic
