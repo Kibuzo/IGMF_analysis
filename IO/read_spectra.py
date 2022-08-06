@@ -1,6 +1,10 @@
 from astropy.io import fits
 from astropy import units
+import matplotlib.pyplot as plt
+from gammapy.modeling.models import EBLAbsorptionNormSpectralModel as absorb
 import numpy
+
+from Constants.J1943 import REDSHIFT
 
 '''The old process worked like this:
 1) Open the fit scirpt (FittaCherenkiSomething) and execute it, mostly.
@@ -22,7 +26,8 @@ will accept the file_path as argument
 - More methods to come.
 '''
 
-#file_name = '/media/kibuzo/80a7f701-fd11-4c0c-993a-76b511ae8b86/Backup HESS/Fermipy/FromScratch/SED.fits'
+file_name = '/media/kibuzo/80a7f701-fd11-4c0c-993a-76b511ae8b86/Backup HESS/Fermipy/FromScratch/SED.fits'
+dominguez = absorb.read_builtin('dominguez', redshift=REDSHIFT)
 
 class spectrum:
    ''' Spectrum superclass containing a common interface and basic
@@ -43,6 +48,41 @@ class spectrum:
       '''
       return (self.ts is not None)
    
+   def plot(self, **kwargs):
+      '''Utility to plot spectra in the same format
+      '''
+      if self._has_ts():
+         mask=self.ts > 9 
+         umask = ~mask
+         ulims = self.ulims[umask]
+         energy_ulims = self.energy[umask]
+         plt.errorbar(energy_ulims, ulims, yerr = ulims/2, fmt ='',
+                      linestyle = 'None', uplims = True)
+      else:
+         mask = numpy.ones(len(self.flux), dtype = bool)
+      #mask = numpy.ones(len(self.flux), dtype = bool)
+      #umask = ~mask
+      energy = self.energy[mask]
+      flux = self.flux[mask]
+      err_hi = self.err_high[mask]/2
+      err_lo = self.err_low[mask]/2
+      errorbars = (err_hi, err_lo)
+      plt.errorbar(energy, flux, yerr=errorbars, markersize=4,\
+                 elinewidth = 1, linestyle ='None', **kwargs)
+      plt.grid(linestyle = '--')
+      plt.xscale('log')
+      plt.yscale('log')
+      plt.legend()
+
+   def deabsorb(self):
+      self.flux = self.flux*numpy.exp(dominguez.spectral_index(self.energy*units.GeV))
+
+
+   def absorb (self):
+      self.flux = self.flux*numpy.exp(-dominguez.spectral_index(self.energy*units.GeV))
+    
+
+   
 
 
 class fermi(spectrum):
@@ -55,10 +95,10 @@ class fermi(spectrum):
       hdul.info()
       scaling = 1/units.MeV.to(units.GeV)#From 1/MeV to 1/GeV
       flux = hdul[1].data['dnde']*scaling
-      err_low = hdul[1].data['dnde_err']*scaling*2
+      err_low = hdul[1].data['dnde_err']*scaling
       err_high = err_low
       ts = hdul[1].data['ts']
-      ulims = hdul[1].data['dnde_ul']*scaling*2
+      ulims = hdul[1].data['dnde_ul']*scaling
       energy = hdul[1].data['e_ref']/scaling
       spectrum.__init__(self, flux, err_high, err_low,\
          ulims, energy, ts)
@@ -113,3 +153,12 @@ class hess(spectrum):
       spectrum.__init__(self, flux, err_high, err_low,\
          ulims, energy)
 
+FermiSpec = fermi(file_name)
+#FermiSpec.plot(label = 'Fermi', marker = 'v')
+FermiSpec.deabsorb()
+FermiSpec.plot(label = 'Fermi', marker = 'v')
+VeritasSpec = veritas()
+VeritasSpec.plot(label = 'Veritas', marker = '.')
+HessSpec = hess()
+HessSpec.plot(label = 'Hess', marker = 'x')
+plt.show()
