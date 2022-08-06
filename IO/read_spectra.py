@@ -17,9 +17,9 @@ from Constants.J1943 import REDSHIFT
 
 We are in the middle of rethinking the process entirely. 
 
-- Now The spectrum class is capable of reading the data and is ready to 
-host a plot method, a fit method, and accomodate for parameters so that 
-the user can read it.
+- Now The spectrum class is capable of reading the data and plotting, and 
+is ready to host a fit method, and accomodate for parameters so that 
+the user can read them.
 - The VERITAS/HESS columns will be soon written to a fits file and the 
 reading will be unified so that there will be only one spectrum class and
 will accept the file_path as argument
