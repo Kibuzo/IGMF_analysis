@@ -1,5 +1,6 @@
 from astropy.io import fits
 from astropy import units
+from astropy.table import Table
 import matplotlib.pyplot as plt
 from gammapy.modeling.models import EBLAbsorptionNormSpectralModel as absorb
 import numpy
@@ -20,9 +21,9 @@ We are in the middle of rethinking the process entirely.
 - Now The spectrum class is capable of reading the data and plotting, and 
 is ready to host a fit method, and accomodate for parameters so that 
 the user can read them.
-- The VERITAS/HESS columns will be soon written to a fits file and the 
-reading will be unified so that there will be only one spectrum class and
-will accept the file_path as argument
+- Veritas/HESS columns can now be written to a file and the generic class
+from_file sort of works (still needs the correct scaling for the energies
+for compatibility with fermi files)
 - More methods to come.
 '''
 
@@ -43,15 +44,15 @@ class spectrum:
        self.ulims = ulims
        self.energy = energy
    
-   def _has_ts(self):
+   def _has_ulims(self):
       '''Search for upper limits column
       '''
-      return (self.ts is not None)
+      return (numpy.any (self.ts < 9))
    
    def plot(self, **kwargs):
       '''Utility to plot spectra in the same format
       '''
-      if self._has_ts():
+      if self._has_ulims():
          mask=self.ts > 9 
          umask = ~mask
          ulims = self.ulims[umask]
@@ -80,10 +81,23 @@ class spectrum:
 
    def absorb (self):
       self.flux = self.flux*numpy.exp(-dominguez.spectral_index(self.energy*units.GeV))
+
+   def write (self, name, overwrite = 'False'):
+      ''' Write a unified fits file from each possible class. This is designed
+      to work in the same fashion for each possible spectrum, so that the
+      units, column names etc are unified and a single class can be used to
+      load them all by justy defining another path.
+      The ts column will be a placeholder for most extracted data, and is
+      designed merely to work with the implemented filters: 100 for data points
+      and 0 for upper limits.
+
+      Please, leave the old functions for reference and debugging issues.
+      '''
+      #data_column = fits.Column(name = 'Spectrum', format = 'E', array=)
+      t = Table ([self.energy, self.flux, self.err_high, self.err_low, self.ulims,\
+               self.ts], names = ('energy','flux','err_high','err_low','ulims','ts'))
+      t.write(name, format = 'fits', overwrite = overwrite)
     
-
-   
-
 
 class fermi(spectrum):
    '''Read/output fermipy file relevant data, converted in GeVs
@@ -124,9 +138,10 @@ class veritas(spectrum):
           1.26e-11, 9.87e-12, 4e-12, 3.49e-12])/scaling
       err_low = numpy.array([1.2e-11, 6.13e-12, 3.04e-12, 2.15e-12,\
           1.49e-12, 1.28e-12, 1.15e-12])/scaling
-      ulims = []
+      ulims = numpy.zeros(len(err_low))
+      ts = 100. + numpy.zeros(len(err_low))
       spectrum.__init__(self, flux, err_high, err_low,\
-         ulims, energy)
+         ulims, energy, ts)
       
 
 class hess(spectrum):
@@ -149,16 +164,40 @@ class hess(spectrum):
           /scaling
       err_low = numpy.array([5.87e-12, 2.35e-12, 1.69e-12, 9.54e-13,\
           7.11e-13, 6.01e-13, 3.24e-13, 6.13e-13, 0, 0, 0, 0])/scaling
-      ulims = []
+      ulims = numpy.zeros(len(err_low))
+      ts = 100. + numpy.zeros(len(err_low))
       spectrum.__init__(self, flux, err_high, err_low,\
-         ulims, energy)
+         ulims, energy, ts)
+
+class from_fits(spectrum):
+   '''Generic utility to load SED from self.processed fits file
+   '''
+   def __init__(self, file_path):
+      '''Constructor
+      '''  
+      hdul = fits.open(file_path)
+      hdul.info()
+      #scaling = 1/units.MeV.to(units.GeV)#From 1/MeV to 1/GeV
+      flux = hdul[1].data['flux']
+      err_low = hdul[1].data['err_low']
+      err_high = hdul[1].data['err_high']
+      ts = hdul[1].data['ts']
+      ulims = hdul[1].data['ulims']
+      energy = hdul[1].data['energy']
+      spectrum.__init__(self, flux, err_high, err_low,\
+         ulims, energy, ts)
+      #self.energy_max = hdul[1].data['e_max']/scaling
+      #self.energy_min = hdul[1].data['e_min']/scaling
+
 
 FermiSpec = fermi(file_name)
-#FermiSpec.plot(label = 'Fermi', marker = 'v')
-FermiSpec.deabsorb()
 FermiSpec.plot(label = 'Fermi', marker = 'v')
-VeritasSpec = veritas()
+VeritasSpec = from_fits('Veritas.fits')
+#FermiSpec.deabsorb()
+#FermiSpec.plot(label = 'Fermi', marker = 'v')
+#VeritasSpec = veritas()
+#VeritasSpec.write('Veritas.fits', overwrite = True)
 VeritasSpec.plot(label = 'Veritas', marker = '.')
-HessSpec = hess()
-HessSpec.plot(label = 'Hess', marker = 'x')
+#HessSpec = hess()
+#HessSpec.plot(label = 'Hess', marker = 'x')
 plt.show()
