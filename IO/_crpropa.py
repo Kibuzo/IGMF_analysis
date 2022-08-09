@@ -43,10 +43,10 @@ def _unite_small_files(n_files, file_path, prefix, B_rms, extension =\
     print(f'Writing output file to {large_file}...') 
     return (large_file_path)
 
-def load_files(n_files, file_path, prefix, B_rms, extension='.txt',\
-    suffix='_complete'):
+def load_files(n_files, file_path, prefix, B_rms, extension='.txt',
+               suffix='_complete'):
     ''' Designed to be chained with the output of unite_small_files, or
     directly with a single large file.
     '''
     return (numpy.loadtxt(_unite_small_files(n_files, file_path, prefix, B_rms, 
-            extension = '.txt',suffix = '_complete')))
+            extension = '.txt',suffix = suffix)))
