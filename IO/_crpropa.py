@@ -50,3 +50,21 @@ def load_files(n_files, file_path, prefix, B_rms, extension='.txt',
     '''
     return (numpy.loadtxt(_unite_small_files(n_files, file_path, prefix, B_rms, 
             extension = '.txt',suffix = suffix)))
+
+class simulation:
+    '''Class containing all the methods for a CRPropa simulation
+    '''
+    def __init__(self, file_path, n_files):
+        table = load_files(n_files, file_path)
+        self.px = table[8]
+        self.py = table[9]
+        self.pz = table[10]
+        self.energy = table[4]*1e9
+        self.idx = numpy.abs(table[3]) == 22
+        pnorm = numpy.sqrt(self.px**2+self.py**2+self.pz**2)
+        self.x=(self.px/pnorm)*180/numpy.pi
+        self.y=(self.py/pnorm)*180/numpy.pi
+        self.z=(self.pz/pnorm)*180/numpy.pi
+
+
+

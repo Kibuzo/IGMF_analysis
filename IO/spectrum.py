@@ -188,12 +188,15 @@ class hess(spectrum):
                           ulims, energy, ts)
 
 VeritasSpec = from_fits('Veritas.fits')
+#VeritasSpec.deabsorb()
 FermiSpec = from_fits('Fermi.fits')
+FermiSpec.deabsorb()
 
 VeritasSpec.plot(label = 'Veritas', marker = '.')
 FermiSpec.plot(label = 'Fermi', marker = 'v')
 
 HessSpec = from_fits('Hess.fits')
+#HessSpec.deabsorb()
 HessSpec.plot(label = 'Hess', marker = 'x')
 
 plt.show()
