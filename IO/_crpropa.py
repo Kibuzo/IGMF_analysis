@@ -56,15 +56,54 @@ class simulation:
     '''
     def __init__(self, file_path, n_files):
         table = load_files(n_files, file_path)
+        self.photon_mask = numpy.abs(table[3]) == 22
+        self.cascade_mask = ~(table[2]==table[11])
+        self.cascade_photon = self.photon_mask*self.cascade_mask
         self.px = table[8]
         self.py = table[9]
         self.pz = table[10]
+        self.px0 = table[17]
+        self.py0 = table[18]
+        self.pz0 = table[19]
         self.energy = table[4]*1e9
         self.idx = numpy.abs(table[3]) == 22
         pnorm = numpy.sqrt(self.px**2+self.py**2+self.pz**2)
-        self.x=(self.px/pnorm)*180/numpy.pi
-        self.y=(self.py/pnorm)*180/numpy.pi
-        self.z=(self.pz/pnorm)*180/numpy.pi
+        self.x0 = table[14]
+        self.yo = table[15]
+        self.z0 = table[16]
+        self.x1 = table[23]
+        self.y1 = table[24]
+        self.z1 = table[25]
+        self.x = table[5]
+        self.y = table[6]
+        self.z = table[7]
+
+
+
+    def neronov_cut(self, angle):
+        ''' Utility function to cut the photons based on the angle as
+        defined in Neronov paper.
+        '''
+        delta = numpy.transpose((self.px, self.py, self.pz))
+        delta_initial = numpy.transpose((self.px0, self,py0, self.pz0))
+        #Vectors are already normalized in CRPropa
+        dot_product = numpy.array(numpy.arccos(numpy.clip(numpy.multiply(delta,
+                      delta_initial).sum(1)), -1, 1))
+        phi = self.y1 / numpy.sqrt(self.y1**2+self.x1**2)
+        cos_phi = numpy.sign(self.x1)*numpy.cos(numpy.array(phi))
+        sin_phi = numpy.sign(y1)*numpy.sqrt(1-cos_phi**2)
+        lambda_xx = numpy.sqrt((self.x1-self.x0)**2 + (self.z1-self.z0)**2 + (self.y1-self.y0)**2)
+        theta = numpy.arcsin((lambda_xx/d) * numpy.cos(numpy.pi/2 - dot_product))
+        theta_x = theta*cos_phi
+        theta_y = theta*sin_phi
+        #Define the hit condition to filter photons based on the angle
+        self.hit = numpy.sqrt(theta*(180./numpy.pi)**2)<angle
+
+    def coordinate_cut(self, angle):
+        ''' Utility function to cut the photons based on the angle as
+        derived from the momentum of the incoming photon.
+        '''
+        pass
 
 
 
