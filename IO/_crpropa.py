@@ -76,7 +76,9 @@ class simulation:
     no index = current, 0 = at source, 1 = at point of creation
     '''
 
-    def __init__(self, n_files, file_path, prefix, Brms): # aggiungere le variabili mancanti.
+    def __init__(self, n_files, file_path, prefix, Brms): 
+        ''' This has to improve. Create a dict and loop over its entries
+        '''
         table = load_files(n_files, file_path, prefix, Brms)
         self.photon_mask = numpy.abs(table[3]) == 22
         self.cascade_mask = ~(table[2] == table[11])
