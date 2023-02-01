@@ -17,6 +17,10 @@ PARSER.add_argument('--include', nargs = '*', choices=DATA_SET, default='all', \
 
 
 def plot(plot_list):
+    ''' Main plotting app. It should plot from fits files since we have defined
+    universal format for that reason. Specific data sets point to specific files
+    so that by choosing a name we are actually implying a path.
+    '''
     for plot in plot_list:
         logging.info(f'plotting {plot}...')
     
@@ -24,7 +28,7 @@ def plot(plot_list):
 def main():
     """main() entry point.
     """
-    logging.basicConfig(format='%(levelname)s:%(message)s',level=logging.INFO)
+    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
     args=PARSER.parse_args().__dict__
     plt.figure('Spectrum')
     plot (args['include'])
