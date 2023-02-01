@@ -1,3 +1,5 @@
+import os
+
 from astropy.io import fits
 from astropy import units
 from astropy.table import Table
@@ -8,6 +10,7 @@ import numpy
 # pylint: disable=no-member
 
 from Constants.J1943 import REDSHIFT
+from structure import IGMF_DATA
 
 #The old process worked like this:
 #1) Open the fit scirpt (FittaCherenkiSomething) and execute it, mostly.
@@ -28,8 +31,6 @@ from Constants.J1943 import REDSHIFT
 #for compatibility with fermi files)
 #- More methods to come.
 
-file_name = '/media/kibuzo/80a7f701-fd11-4c0c-993a-76b511ae8b86/\
-            Backup HESS/Fermipy/FromScratch/SED.fits'
 dominguez = absorb.read_builtin('dominguez', redshift=REDSHIFT)
 
 class spectrum:
@@ -123,8 +124,11 @@ class from_fits(spectrum):
 
 class fermi(spectrum):
     '''Read/output fermipy file relevant data, converted in GeVs
+    Keep in mind that by default the sed obtained from Fermipy is absorbed, 
+    whereas the (hardcoded) veritas/hess columns are absorbed as well as 
+    the standard spectrum fits files contained in the data folder.
     '''
-    def __init__(self, file_path):
+    def __init__(self, file_path = os.path.join(IGMF_DATA, 'SED_from_fermipy.fits')):
         '''Constructor
         '''
         hdul = fits.open(file_path)
@@ -204,20 +208,3 @@ class hess(spectrum):
         ts[-4:] = 0
         spectrum.__init__(self, flux, err_high, err_low,
                           ulims, energy, ts)
-
-VeritasSpec = from_fits('data/Veritas.fits')
-HessSpec = from_fits('data/Hess.fits')
-FermiSpec = from_fits('data/Fermi.fits')
-
-FermiSpec.deabsorb()
-Hspec = hess()
-
-plt.figure('Multifrequency spectrum')
-VeritasSpec.plot(label = 'Veritas', marker = '.')
-HessSpec.plot(label = 'Hess', marker = 'x')
-FermiSpec.plot(label = 'Fermi', marker = 'v')
-
-plt.title('Intrinsic multifrequency spectrum of HESS J1943+213')
-plt.legend()
-
-plt.show()
