@@ -74,6 +74,8 @@ class spectrum:
         plt.grid(linestyle = '--')
         plt.xscale('log')
         plt.yscale('log')
+        plt.xlabel('[Energy [GeV]]')
+        plt.ylabel('Flux [cm$^{-2}$s$^{-1}$GeV$^{-1}$]')
         plt.legend()
 
     def deabsorb(self):
@@ -103,7 +105,7 @@ class spectrum:
         t.write(name, format = 'fits', overwrite = overwrite)
 
 class from_fits(spectrum):
-    '''Generic utility to load SED from self.processed fits file
+    '''Generic utility to load SED from self-processed fits file
     '''
     def __init__(self, file_path):
         '''Constructor
@@ -141,9 +143,11 @@ class fermi(spectrum):
 
 class veritas(spectrum):
     ''' This is sadly based on vectors instead of files.
-    The flux is intrinsic.
+    The flux is intrinsic, and is obtained from
+    https://iopscience.iop.org/article/10.3847/1538-4357/aacbd0/pdf
+    and then de-absorbed (see the hess class for method).
 
-    Sadness apart, it works. See if you can save everything in a file.
+    Sadness apart, it works.
     '''
     def __init__(self):
         '''Constructor
@@ -164,9 +168,23 @@ class veritas(spectrum):
 
 class hess(spectrum):
     ''' This is sadly based on vectors instead of files.
-    The flux is intrinsic.
+    The flux is intrinsic, obtained from
+    https://iopscience.iop.org/article/10.3847/1538-4357/aacbd0/pdf
+    Achtung (this took me a while to debug): the points that you see here
+    are not taken directly from the paper, rather they have been de-absorbed
+    with an EBL model from dominguez (such as the one we use in this very
+    script). We shall provide a unit test for this. The original vector of
+    fluxes in unites of cm^-2·s^-2·Tev^-1 is provided here
 
-    Sadness apart, it works. See if you can save everything in a file.
+    flux = [3.94e-12, 1.44e-12, 7.86e-13, 2.5e-13, 
+                            1e-13, 5.8e-14, 1.3e-14, 2.1e-14, 2.9e-15, 
+                            2.3e-16, 2.4e-15, 4.8e-16]
+
+    and one can see that, apart from a scaling factor, it trends exactly
+    as the flux column from the HESS fits file, as opposed to de-absorbing
+    or absorbing it 
+
+    Despite being written in a despicable way, it works.
     '''
     def __init__(self):
         '''Constructor
@@ -187,16 +205,19 @@ class hess(spectrum):
         spectrum.__init__(self, flux, err_high, err_low,
                           ulims, energy, ts)
 
-VeritasSpec = from_fits('Veritas.fits')
-#VeritasSpec.deabsorb()
-FermiSpec = from_fits('Fermi.fits')
-FermiSpec.deabsorb()
+VeritasSpec = from_fits('data/Veritas.fits')
+HessSpec = from_fits('data/Hess.fits')
+FermiSpec = from_fits('data/Fermi.fits')
 
+FermiSpec.deabsorb()
+Hspec = hess()
+
+plt.figure('Multifrequency spectrum')
 VeritasSpec.plot(label = 'Veritas', marker = '.')
+HessSpec.plot(label = 'Hess', marker = 'x')
 FermiSpec.plot(label = 'Fermi', marker = 'v')
 
-HessSpec = from_fits('Hess.fits')
-#HessSpec.deabsorb()
-HessSpec.plot(label = 'Hess', marker = 'x')
+plt.title('Intrinsic multifrequency spectrum of HESS J1943+213')
+plt.legend()
 
 plt.show()
