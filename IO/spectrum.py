@@ -174,7 +174,7 @@ class hess(spectrum):
     are not taken directly from the paper, rather they have been de-absorbed
     with an EBL model from dominguez (such as the one we use in this very
     script). We shall provide a unit test for this. The original vector of
-    fluxes in unites of cm^-2·s^-2·Tev^-1 is provided here
+    fluxes in units of cm^-2·s^-2·Tev^-1 is provided here
 
     flux = [3.94e-12, 1.44e-12, 7.86e-13, 2.5e-13, 
                             1e-13, 5.8e-14, 1.3e-14, 2.1e-14, 2.9e-15, 
