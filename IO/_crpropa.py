@@ -18,6 +18,18 @@ def _unite_small_files(n_files, file_path, prefix, B_rms, extension='.txt',\
     'ifs'  is due to the fact that empty files might occour and disrupt
     the reading pipeline with arrays that have wrong dimension, so an
     accurate refactoring should account for this possibility.
+
+    The way this was originally designed to work was this: 
+        - Start by simulating a small subset of photons
+        - Excise the useless columns and place everything in an ascii file
+        with no labels at all (numpy's savetxt was the powerhorse here...)
+        - copy all the files from the cluster to the local folder
+        - Recover the original formatting and unite everything in a single 
+        large file still with no formatting
+    I should try at least to document the structure and provide public, 
+    cleanedand possibly sort of human-readable files for all simulations 
+    that i have performed to get rid of local copies, and this function 
+    could be the place to start..
     '''
     large_file_name = (f'{prefix}{B_rms}{suffix}{extension}')
     large_file_path = os.path.join(file_path, large_file_name)
