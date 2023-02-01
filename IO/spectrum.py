@@ -1,3 +1,5 @@
+import os
+
 from astropy.io import fits
 from astropy import units
 from astropy.table import Table
@@ -8,6 +10,7 @@ import numpy
 # pylint: disable=no-member
 
 from Constants.J1943 import REDSHIFT
+from structure import IGMF_DATA
 
 #The old process worked like this:
 #1) Open the fit scirpt (FittaCherenkiSomething) and execute it, mostly.
@@ -28,8 +31,6 @@ from Constants.J1943 import REDSHIFT
 #for compatibility with fermi files)
 #- More methods to come.
 
-file_name = '/media/kibuzo/80a7f701-fd11-4c0c-993a-76b511ae8b86/\
-            Backup HESS/Fermipy/FromScratch/SED.fits'
 dominguez = absorb.read_builtin('dominguez', redshift=REDSHIFT)
 
 class spectrum:
@@ -74,6 +75,8 @@ class spectrum:
         plt.grid(linestyle = '--')
         plt.xscale('log')
         plt.yscale('log')
+        plt.xlabel('[Energy [GeV]]')
+        plt.ylabel('Flux [cm$^{-2}$s$^{-1}$GeV$^{-1}$]')
         plt.legend()
 
     def deabsorb(self):
@@ -103,7 +106,7 @@ class spectrum:
         t.write(name, format = 'fits', overwrite = overwrite)
 
 class from_fits(spectrum):
-    '''Generic utility to load SED from self.processed fits file
+    '''Generic utility to load SED from self-processed fits file
     '''
     def __init__(self, file_path):
         '''Constructor
@@ -121,8 +124,11 @@ class from_fits(spectrum):
 
 class fermi(spectrum):
     '''Read/output fermipy file relevant data, converted in GeVs
+    Keep in mind that by default the sed obtained from Fermipy is absorbed, 
+    whereas the (hardcoded) veritas/hess columns are absorbed as well as 
+    the standard spectrum fits files contained in the data folder.
     '''
-    def __init__(self, file_path):
+    def __init__(self, file_path = os.path.join(IGMF_DATA, 'SED_from_fermipy.fits')):
         '''Constructor
         '''
         hdul = fits.open(file_path)
@@ -141,9 +147,11 @@ class fermi(spectrum):
 
 class veritas(spectrum):
     ''' This is sadly based on vectors instead of files.
-    The flux is intrinsic.
+    The flux is intrinsic, and is obtained from
+    https://iopscience.iop.org/article/10.3847/1538-4357/aacbd0/pdf
+    and then de-absorbed (see the hess class for method).
 
-    Sadness apart, it works. See if you can save everything in a file.
+    Sadness apart, it works.
     '''
     def __init__(self):
         '''Constructor
@@ -164,9 +172,23 @@ class veritas(spectrum):
 
 class hess(spectrum):
     ''' This is sadly based on vectors instead of files.
-    The flux is intrinsic.
+    The flux is intrinsic, obtained from
+    https://iopscience.iop.org/article/10.3847/1538-4357/aacbd0/pdf
+    Achtung (this took me a while to debug): the points that you see here
+    are not taken directly from the paper, rather they have been de-absorbed
+    with an EBL model from dominguez (such as the one we use in this very
+    script). We shall provide a unit test for this. The original vector of
+    fluxes in units of cm^-2·s^-2·Tev^-1 is provided here
 
-    Sadness apart, it works. See if you can save everything in a file.
+    flux = [3.94e-12, 1.44e-12, 7.86e-13, 2.5e-13, 
+                            1e-13, 5.8e-14, 1.3e-14, 2.1e-14, 2.9e-15, 
+                            2.3e-16, 2.4e-15, 4.8e-16]
+
+    and one can see that, apart from a scaling factor, it trends exactly
+    as the flux column from the HESS fits file, as opposed to de-absorbing
+    or absorbing it 
+
+    Despite being written in a despicable way, it works.
     '''
     def __init__(self):
         '''Constructor
@@ -186,17 +208,3 @@ class hess(spectrum):
         ts[-4:] = 0
         spectrum.__init__(self, flux, err_high, err_low,
                           ulims, energy, ts)
-
-VeritasSpec = from_fits('Veritas.fits')
-#VeritasSpec.deabsorb()
-FermiSpec = from_fits('Fermi.fits')
-FermiSpec.deabsorb()
-
-VeritasSpec.plot(label = 'Veritas', marker = '.')
-FermiSpec.plot(label = 'Fermi', marker = 'v')
-
-HessSpec = from_fits('Hess.fits')
-#HessSpec.deabsorb()
-HessSpec.plot(label = 'Hess', marker = 'x')
-
-plt.show()
