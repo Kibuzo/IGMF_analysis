@@ -30,6 +30,8 @@ def _unite_small_files(n_files, file_path, prefix, B_rms, extension='.txt',\
     cleanedand possibly sort of human-readable files for all simulations 
     that i have performed to get rid of local copies, and this function 
     could be the place to start..
+    A temporary file archive on which to run this script can be found at
+    https://drive.google.com/file/d/1qPSTzlKU7pKz00GVkVVYc1qIPqSN1b7G/view?usp=share_link
     '''
     large_file_name = (f'{prefix}{B_rms}{suffix}{extension}')
     large_file_path = os.path.join(file_path, large_file_name)
