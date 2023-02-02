@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from IO import spectrum
 from math_.base import cutoff
 from structure import IGMF_DATA
+from Constants.J1943 import EMIN, EMAX, N0, INDEX, CUTOFF
 
 # pylint: disable=logging-fstring-interpolation
 # pylint: disable=invalid-name
@@ -24,7 +25,7 @@ PARSER = ArgumentParser(description=__description__)
 PARSER.add_argument('--include', nargs = '*', choices=DATA_SET, default='all', \
     help='Plots to include and overlay')
 
-def plot_cutoff (energy = [7,4060], N0=3.83e-14, index=1.5 , ecut=2080):
+def plot_cutoff (energy = [EMIN,EMAX], N0=N0, index=INDEX , ecut=CUTOFF):
     ''' Pass energy grid, which will then be resampled to create a smoother
     source function plot.
     The function is the expcutoff defined in math.base, and the default
