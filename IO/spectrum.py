@@ -77,7 +77,6 @@ class spectrum:
         plt.yscale('log')
         plt.xlabel('Energy [GeV]')
         plt.ylabel('Flux [cm$^{-2}$s$^{-1}$GeV$^{-1}$]')
-        plt.legend()
 
     def deabsorb(self):
         '''De-absorb the spectrum with a dominguez EBL model.

@@ -1,6 +1,9 @@
 import logging
+import numpy
 import os
+
 from IO import spectrum
+from math_.base import cutoff
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 from structure import IGMF_DATA
@@ -18,6 +21,15 @@ PARSER = ArgumentParser(description=__description__)
 PARSER.add_argument('--include', nargs = '*', choices=DATA_SET, default='all', \
     help='Plots to include and overlay')
 
+def plot_cutoff (energy = [7,4060], N0=3.83e-14, index=1.5 , ecut=2080):
+    ''' Pass energy grid, which will then be resampled to create a smoother
+    source function plot.
+    The function is the expcutoff defined in math.base.
+    '''
+    e_grid = numpy.geomspace(min(energy), max(energy), 1000)
+    f_grid = cutoff(e_grid, N0, index, ecut)
+    plt.plot(e_grid, f_grid, ls = '--', color='tab:orange', \
+        label = 'Exponential cutoff fit')
 
 
 def make_plot(plot_list):
@@ -27,17 +39,24 @@ def make_plot(plot_list):
     '''
     spec_name = {'fermi': 'Fermi.fits', 'hess': 'Hess.fits', 'veritas': 'Veritas.fits', \
         'cascade': 'cascade.fits', 'fit': 'fit.fits'}
+    spec_symbols = {'fermi': '.', 'hess': 'v', 'veritas': 'x'}
     if plot_list == 'all':
         plot_list = DATA_SET[:-1]
     for plot in plot_list:
         logging.info(f'Attempting to plot {plot}...')
+        if plot == 'fit':
+            plot_cutoff()
+        if plot == 'cascade':
+            pass
         try:
             spec = spectrum.from_fits(os.path.join(IGMF_DATA, spec_name[plot]))
-            spec.plot(marker = '.', color = 'tab:blue')
+            spec.plot(marker = spec_symbols[plot], color = 'tab:blue', label = f'de-absorbed data points ({plot.upper()})')
         except:
             logging.warning(f'Plotting of {plot} failed, maybe the fits file is\
                 not in the data folder?')
             pass
+    plt.title ('HESS J1943+213 intrinsic spectrum')
+    plt.legend()
     plt.show()
     
 
