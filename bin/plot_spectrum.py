@@ -24,7 +24,8 @@ PARSER.add_argument('--include', nargs = '*', choices=DATA_SET, default='all', \
 def plot_cutoff (energy = [7,4060], N0=3.83e-14, index=1.5 , ecut=2080):
     ''' Pass energy grid, which will then be resampled to create a smoother
     source function plot.
-    The function is the expcutoff defined in math.base.
+    The function is the expcutoff defined in math.base, and the default 
+    parameters are the ones defined in the paper.
     '''
     e_grid = numpy.geomspace(min(energy), max(energy), 1000)
     f_grid = cutoff(e_grid, N0, index, ecut)
@@ -35,7 +36,11 @@ def plot_cutoff (energy = [7,4060], N0=3.83e-14, index=1.5 , ecut=2080):
 def make_plot(plot_list):
     ''' Main plotting app. It should plot from fits files since we have defined
     universal format for that reason. Specific data sets point to specific files
-    so that by choosing a name we are actually implying a path.
+    path so that by choosing a name we are actually implying a path.
+    
+    Warning, this is not designed for flexibility, as it only provides a quick 
+    interface to plot static data, including the fits. If you want to test stuff
+    do it manually importing the libraries instead.
     '''
     spec_name = {'fermi': 'Fermi.fits', 'hess': 'Hess.fits', 'veritas': 'Veritas.fits', \
         'cascade': 'cascade.fits', 'fit': 'fit.fits'}
