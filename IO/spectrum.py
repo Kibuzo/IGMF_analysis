@@ -75,7 +75,7 @@ class spectrum:
         plt.grid(linestyle = '--')
         plt.xscale('log')
         plt.yscale('log')
-        plt.xlabel('[Energy [GeV]]')
+        plt.xlabel('Energy [GeV]')
         plt.ylabel('Flux [cm$^{-2}$s$^{-1}$GeV$^{-1}$]')
         plt.legend()
 
