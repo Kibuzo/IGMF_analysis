@@ -53,13 +53,14 @@ def make_plot(plot_list):
             plot_cutoff()
         if plot == 'cascade':
             pass
-        try:
-            spec = spectrum.from_fits(os.path.join(IGMF_DATA, spec_name[plot]))
-            spec.plot(marker = spec_symbols[plot], color = 'tab:blue', label = f'de-absorbed data points ({plot.upper()})')
-        except:
-            logging.warning(f'Plotting of {plot} failed, maybe the fits file is\
-                not in the data folder?')
-            pass
+        else:
+            try:
+                spec = spectrum.from_fits(os.path.join(IGMF_DATA, spec_name[plot]))
+                spec.plot(marker = spec_symbols[plot], color = 'tab:blue', label = f'de-absorbed data points ({plot.upper()})')
+            except:
+                logging.warning(f'Plotting of {plot} failed, maybe the fits file is\
+                    not in the data folder?')
+                pass
     plt.title ('HESS J1943+213 intrinsic spectrum')
     plt.legend()
     plt.show()
