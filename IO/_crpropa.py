@@ -1,9 +1,11 @@
+import logging
 import os
 import numpy
 
 from IGMF_analysis.Constants import j1943
 # pylint: disable=invalid-name
 
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
 def _unite_small_files(n_files, file_path, prefix, B_rms, extension='.txt',\
      suffix='_complete', overwrite=False):
@@ -43,7 +45,7 @@ def _unite_small_files(n_files, file_path, prefix, B_rms, extension='.txt',\
     length = len(numpy.unique(large_file[11]))
     for i in range(1, int(n_files-1)):
         file_name = (f'{prefix}{i}{B_rms}{extension}')
-        if os.path.exists(filename):
+        if os.path.exists(file_name):
             small_file = numpy.loadtxt(os.path.join(file_path, file_name))
             length += len(numpy.unique(small_file[11]))
             if small_file.shape[0] > 0:
@@ -54,12 +56,12 @@ def _unite_small_files(n_files, file_path, prefix, B_rms, extension='.txt',\
                 large_file = numpy.concatenate(
                     (large_file, small_file), axis=1)
             else:
-                print(f'{file_name} is empty, skipping...')
+                logging.info(f'{file_name} is empty, skipping...')
         else:
-            print(f'Warning: {file_name} does not exist')
-    print(f'A total of {length} primary photons generated the cascade that\
-         hit the detector')
-    print(f'Writing output file to {large_file}...')
+            logging.warning(f'{file_name} does not exist')
+    logging.info(f'A total of {length} primary photons generated the '\
+        'cascade that hit the detector')
+    logging.info(f'Writing output file to {large_file}...')
     return large_file_path
 
 
