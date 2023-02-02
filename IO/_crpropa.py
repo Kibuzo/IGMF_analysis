@@ -2,7 +2,7 @@ import logging
 import os
 import numpy
 
-from IGMF_analysis.Constants import j1943
+from Constants.J1943 import all
 # pylint: disable=invalid-name
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
@@ -71,7 +71,7 @@ def load_files(n_files, file_path, prefix, B_rms, extension='.txt',
     directly with a single large file.
     '''
     return (numpy.loadtxt(_unite_small_files(n_files, file_path, prefix,
-            B_rms, extension='.txt', suffix=suffix)))
+            B_rms, extension=extension, suffix=suffix)))
 
 
 class simulation:
