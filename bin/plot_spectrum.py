@@ -20,7 +20,7 @@ PARSER.add_argument('--include', nargs = '*', choices=DATA_SET, default='all', \
 
 
 
-def plot(plot_list):
+def make_plot(plot_list):
     ''' Main plotting app. It should plot from fits files since we have defined
     universal format for that reason. Specific data sets point to specific files
     so that by choosing a name we are actually implying a path.
@@ -33,9 +33,9 @@ def plot(plot_list):
         logging.info(f'Attempting to plot {plot}...')
         try:
             spec = spectrum.from_fits(os.path.join(IGMF_DATA, spec_name[plot]))
-            spec.plot()
+            spec.plot(marker = '.', color = 'tab:blue')
         except:
-            logging.info(f'Plotting of {plot} failed, maybe the fits file is\
+            logging.warning(f'Plotting of {plot} failed, maybe the fits file is\
                 not in the data folder?')
             pass
     plt.show()
@@ -47,7 +47,7 @@ def main():
     logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
     args=PARSER.parse_args().__dict__
     plt.figure('Spectrum')
-    plot (args['include'])
+    make_plot (args['include'])
 
 if __name__ == '__main__':
     main()
