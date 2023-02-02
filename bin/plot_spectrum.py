@@ -1,13 +1,16 @@
 import logging
-import numpy
+from argparse import ArgumentParser
 import os
+
+import numpy
+import matplotlib.pyplot as plt
 
 from IO import spectrum
 from math_.base import cutoff
-from argparse import ArgumentParser
-import matplotlib.pyplot as plt
 from structure import IGMF_DATA
 
+# pylint: disable=logging-fstring-interpolation
+# pylint: disable=invalid-name
 
 __description__ = \
 """Utility to plot the spectra from our unified standard fits file.
@@ -24,7 +27,7 @@ PARSER.add_argument('--include', nargs = '*', choices=DATA_SET, default='all', \
 def plot_cutoff (energy = [7,4060], N0=3.83e-14, index=1.5 , ecut=2080):
     ''' Pass energy grid, which will then be resampled to create a smoother
     source function plot.
-    The function is the expcutoff defined in math.base, and the default 
+    The function is the expcutoff defined in math.base, and the default
     parameters are the ones defined in the paper.
     '''
     e_grid = numpy.geomspace(min(energy), max(energy), 1000)
@@ -37,13 +40,14 @@ def make_plot(plot_list):
     ''' Main plotting app. It should plot from fits files since we have defined
     universal format for that reason. Specific data sets point to specific files
     path so that by choosing a name we are actually implying a path.
-    
-    Warning, this is not designed for flexibility, as it only provides a quick 
+
+    Warning, this is not designed for flexibility, as it only provides a quick
     interface to plot static data, including the fits. If you want to test stuff
     do it manually importing the libraries instead.
     '''
-    spec_name = {'fermi': 'Fermi.fits', 'hess': 'Hess.fits', 'veritas': 'Veritas.fits', \
-        'cascade': 'cascade.fits', 'fit': 'fit.fits'}
+    spec_name = {'fermi': 'Fermi.fits', 'hess': 'Hess.fits', \
+         'veritas': 'Veritas.fits','cascade': 'cascade.fits', \
+         'fit': 'fit.fits'}
     spec_symbols = {'fermi': '.', 'hess': 'v', 'veritas': 'x'}
     if plot_list == 'all':
         plot_list = DATA_SET[:-1]
@@ -62,11 +66,9 @@ def make_plot(plot_list):
             except:
                 logging.warning(f'Plotting of {plot} failed, maybe the fits '\
                     'file is not in the data folder?')
-                pass
     plt.title ('HESS J1943+213 intrinsic spectrum')
     plt.legend()
     plt.show()
-    
 
 def main():
     """main() entry point.
