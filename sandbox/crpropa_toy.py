@@ -10,8 +10,11 @@ my_sim = _crpropa.simulation(1000, toy_sim_dir, '2data_final_largecone', '1e-08'
 theta_x = radians_to_degree(my_sim.data['Px'])
 theta_y = radians_to_degree(my_sim.data['Py'])
 filter = numpy.logical_and(numpy.abs(theta_x)<1, numpy.abs(theta_y)<1)
+plt.figure ('distribuzione spaziale')
 plt.hist2d(theta_x[filter], theta_y[filter], bins = 100, norm = mpl.colors.LogNorm())
 plt.colorbar()
+plt.figure ('radial plot')
+plt.hist(numpy.sqrt((theta_x[filter]**2+theta_y[filter]**2)), bins = 30)
 plt.show()
 
 
