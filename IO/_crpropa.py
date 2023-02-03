@@ -1,6 +1,7 @@
 import logging
 import os
 import numpy
+import matplotlib.pyplot as plt
 
 from Constants.J1943 import D
 from math_.base import xyoffset_to_r, radians_to_degree, degree_to_radians
@@ -171,18 +172,20 @@ class simulation:
         self.dermer_theta = numpy.arcsin(
             (lambda_xx/D) * numpy.cos(numpy.pi/2 - delta))
         # Define the hit condition to filter photons based on the angle
-        hit = numpy.sqrt(self.dermer_theta*(180./numpy.pi)**2) < angle
-        return (hit)
+        self.dermer_cut = numpy.sqrt(self.dermer_theta*(180./numpy.pi)**2) < angle
 
     def momentum_cut(self, angle=0.3):
         ''' Utility function to cut the photons based on the angle as
         derived from the momentum of the incoming photon.
 
         LAT angle to be defined in (fractional) degrees and is 0.3 by default
+
+        Note that this is not meant to be a selection of "Good" photons in the
+        case in which we are plotting a map
         '''
-        p_norm = self.px**2 + self.py**2 + self.pz**2
-        x_arr = (self.px/p_norm)
-        y_arr = (self.py/p_norm)
+        p_norm = self.data['Px']**2 + self.data['Py']**2 + self.data['Pz']**2
+        x_arr = (self.data['Px']/p_norm)
+        y_arr = (self.data['Py']/p_norm)
         # This other one has been entirely rewritten: the angle is the
         # weight of the projection w.r.t. the entire vector amplitude,
         # which is 1 because the vector is normalized. We don't distinguish
@@ -192,16 +195,45 @@ class simulation:
         #hit = numpy.sqrt(numpy.arcsin(x_arr)**2 + numpy.arcsin(y_arr)**2)\
         #    * 180/numpy.pi < angle
 
-        hit = radians_to_degree(xyoffset_to_r(numpy.arctan(x_arr), \
+        self.momentum_cut = radians_to_degree(xyoffset_to_r(numpy.arctan(x_arr), \
             numpy.arctan(y_arr)**2)) < angle
-        return (hit)
     
-    def plot_map (self):
+    def coordinate_cut(self, half_angle = 2.5):
+        ''' Select only photons hitting the (virtual) detector. This is where
+        you want to start from if you want to create a map
+        '''
+        self.hit = radians_to_degree(xyoffset_to_r(self.data['X'], self.data['Y']))\
+                 < half_angle
+
+
+
+    def plot_map (self, selection = 'momentum'):
         ''' 2d theta² plot of the map of incoming photons.
         '''
-        pass
+        theta_x = radians_to_degree(self.data['Px'])
+        theta_y = radians_to_degree(self.data['Py'])
+        try:
+            plt.figure('momentum cut')
+            plt.hist2d (theta_x[self.hit], theta_y[self.hit], bins=360)
+            plt.xlabel(r'$\theta_x$')
+            plt.ylabel(r'$\theta_y$')
+            plt.title('Arrival direction of photons (momentum cut)')
+        except:
+            logging.warning ('No momentum cut performed, run'\
+                            'simulation.momentum_cut() before running this')
+        try:
+            plt.figure('dermer cut')
+            plt.hist2d (theta_x[self.hit], theta_y[self.hit], bins=360)
+            plt.xlabel(r'$\theta_x$')
+            plt.ylabel(r'$\theta_y$')
+            plt.title('Arrival direction of photons (D11 cut)')
+        except:
+            logging.warning ('No Dermer cut performed, run'\
+                            'simulation.momentum_cut() before running this')
+        
 
     def plot_raytrace(self):
         ''' 2d plot of a slice of the space that displays the interaction
         point and the direction of electromagnetic particles.
         '''
+        pass
