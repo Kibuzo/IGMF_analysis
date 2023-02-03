@@ -2,16 +2,21 @@ import logging
 import os
 import numpy
 
-from Constants.J1943 import all
-from math_.base import xyoffset_to_r
+from Constants.J1943 import D
+from math_.base import xyoffset_to_r, radians_to_degree, degree_to_radians
 # pylint: disable=invalid-name
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
+CRPROPA_DICT_NAMES = ['D', 'z',	'SN', 'ID',	'E', 'X', 'Y', 'Z',	'Px', 'Py',	'Pz',\
+    'SN0', 'ID0', 'E0', 'X0', 'Y0', 'Z0', 'P0x', 'P0y', 'P0z', 'SN1', 'ID1', 'E1',\
+    'X1', 'Y1', 'Z1', 'P1x', 'P1y', 'P1z', 'W']
+CRPROPA_NUM = len(CRPROPA_DICT_NAMES)
+
 def _unite_small_files(n_files, file_path, prefix, B_rms, extension='.txt',\
      suffix='_complete', overwrite=False):
     '''Reads all small files with the same characteristics from a folder,
-    Joins them into a single larger file, writes it in the same folder and
+    joins them into a single larger file, writes it in the same folder and
     returns the corresponding file path and name.
 
     This sucks badly and over time recieved several patches decreasing
@@ -41,12 +46,15 @@ def _unite_small_files(n_files, file_path, prefix, B_rms, extension='.txt',\
     if not overwrite and os.path.exists(large_file_path):
         return large_file_path
     large_file = []  # This needs to exist in case first file is empty
-    file_name = (f'{prefix}{B_rms}{extension}')
+    file_name = (f'{prefix}{0}{B_rms}{extension}')
     large_file = numpy.loadtxt(os.path.join(file_path, file_name))
     length = len(numpy.unique(large_file[11]))
     for i in range(1, int(n_files-1)):
+        #skip reading the first one cause it's read outside the loop
         file_name = (f'{prefix}{i}{B_rms}{extension}')
-        if os.path.exists(file_name):
+        full_path = os.path.join(file_path, file_name)
+        if os.path.exists(full_path):
+            logging.info(f'reading from {full_path}...')
             small_file = numpy.loadtxt(os.path.join(file_path, file_name))
             length += len(numpy.unique(small_file[11]))
             if small_file.shape[0] > 0:
@@ -62,8 +70,9 @@ def _unite_small_files(n_files, file_path, prefix, B_rms, extension='.txt',\
             logging.warning(f'{file_name} does not exist')
     logging.info(f'A total of {length} primary photons generated the '\
         'cascade that hit the detector')
-    logging.info(f'Writing output file to {large_file}...')
-    return large_file_path
+    logging.info(f'Writing output file to {large_file_path}...')
+    numpy.savetxt(large_file_path, large_file)
+    return (large_file_path)
 
 
 def load_files(n_files, file_path, prefix, B_rms, extension='.txt',
@@ -76,9 +85,9 @@ def load_files(n_files, file_path, prefix, B_rms, extension='.txt',
 
 
 class simulation:
-    '''Class containing all the methods for a CRPropa simulation
-
+    '''Class containing all the methods for a CRPropa simulation.
     The CRPropa default 3D simulation column output is as follows
+    
     D	z	SN	ID	E	X	Y	Z	Px	Py	Pz	SN0	ID0	E0	X0	Y0	Z0
     P0x	P0y	P0z	SN1	ID1	E1	X1	Y1	Z1	P1x	P1y	P1z	W
 
@@ -97,16 +106,18 @@ class simulation:
         ''' This has to improve. Create a dict and loop over its entries
         '''
         table = load_files(n_files, file_path, prefix, Brms)
+        self.data = {CRPROPA_DICT_NAMES[i]: table[i] for i in range (CRPROPA_NUM)}
         self.photon_mask = numpy.abs(table[3]) == 22
         self.cascade_mask = ~(table[2] == table[11])
         self.cascade_photon = self.photon_mask*self.cascade_mask
+        '''
         self.px = table[8]
         self.py = table[9]
         self.pz = table[10]
         self.px0 = table[17]
         self.py0 = table[18]
         self.pz0 = table[19]
-        self.energy = table[4]*1e9
+        self.energy = table[4]*1e9 #From EeV to human measurements
         self.idx = numpy.abs(table[3]) == 22
         self.x0 = table[14]
         self.y0 = table[15]
@@ -117,10 +128,26 @@ class simulation:
         self.x = table[5]
         self.y = table[6]
         self.z = table[7]
+        '''
+    
+    def photon_mask(self):
+        '''
+        '''
+        pass
+
+    def write_fits(self, file_path):
+        ''' Interface for saving the simulation in the form of a fits,
+        compatible with those of the telescope's spectral analysis.
+        The fit should have a spectrum column and possibly some other
+        observable  that we would like to plot after the selection cut 
+        performed by our processing
+        '''
+        pass
+
 
     def dermer_cut(self, angle):
         ''' Utility function to cut the photons based on the angle as
-        defined in Dermer et al (2011) paper
+        defined in Dermer et al. (2011) paper
         https://ui.adsabs.harvard.edu/abs/2011ApJ...733L..21D/abstract.
         '''
         # Create the vectors to get the angle delta
@@ -137,7 +164,7 @@ class simulation:
                                + (self.y1-self.y0)**2)
         # The following is stored in the class for future usage (e.g.: plotting)
         self.dermer_theta = numpy.arcsin(
-            (lambda_xx/j1943.D) * numpy.cos(numpy.pi/2 - delta))
+            (lambda_xx/D) * numpy.cos(numpy.pi/2 - delta))
         # Define the hit condition to filter photons based on the angle
         hit = numpy.sqrt(self.dermer_theta*(180./numpy.pi)**2) < angle
         return (hit)
@@ -156,6 +183,20 @@ class simulation:
         # which is 1 because the vector is normalized. We don't distinguish
         # between x and y for the angular opening, so we use them both.
         # angle should be 0.3 for the LAT
-        hit = numpy.sqrt(numpy.arcsin(x_arr)**2 + numpy.arcsin(y_arr)**2)\
-            * 180/numpy.pi < angle
+
+        #hit = numpy.sqrt(numpy.arcsin(x_arr)**2 + numpy.arcsin(y_arr)**2)\
+        #    * 180/numpy.pi < angle
+
+        hit = radians_to_degree(xyoffset_to_r(numpy.arctan(x_arr), \
+            numpy.arctan(y_arr)**2)) < angle
         return (hit)
+    
+    def plot_map (self):
+        ''' 2d theta² plot of the map of incoming photons.
+        '''
+        pass
+
+    def plot_raytrace(self):
+        ''' 2d plot of a slice of the space that displays the interaction
+        point and the direction of electromagnetic particles.
+        '''
