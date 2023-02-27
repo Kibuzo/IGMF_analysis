@@ -10,17 +10,41 @@ my_sim = _crpropa.simulation(1000, toy_sim_dir, '2data_final_largecone', '1e-08'
 theta_x = radians_to_degree(my_sim.data['Px'])
 theta_y = radians_to_degree(my_sim.data['Py'])
 theta_r = numpy.sqrt(theta_x**2+theta_y**2)
-filter = numpy.logical_and(numpy.abs(theta_x)<1, numpy.abs(theta_y)<1)
-plt.figure ('Spatial distribution')
-plt.hist2d(theta_x[filter], theta_y[filter], bins = 100, norm = mpl.colors.LogNorm())
+x_arr = my_sim.data['X']
+y_arr = my_sim.data['Y']
+r_arr = numpy.sqrt(x_arr**2+y_arr**2)
+filter_p = numpy.logical_and(numpy.abs(theta_x)<2, numpy.abs(theta_y)<2)
+filter_x = numpy.logical_and(numpy.abs(x_arr)<2, numpy.abs(y_arr)<2)
+
+plt.figure ('Angular distribution')
+plt.hist2d(theta_x[filter_p], theta_y[filter_p], bins = 100, norm = mpl.colors.LogNorm())
 plt.xlabel('$\\theta_{x}$[degrees]')
 plt.ylabel('$\\theta_{y}$[degrees]')
 plt.colorbar()
+
+plt.figure('Spatial Distribution')
+plt.hist2d(x_arr[filter_x], y_arr[filter_x], bins = 100, norm = mpl.colors.LogNorm())
+plt.xlabel('$\\theta_{x}$[degrees]')
+plt.ylabel('$\\theta_{y}$[degrees]')
+plt.colorbar()
+
 plt.figure ('radial plot')
-plt.hist(theta_r[filter], weights=1./theta_r[filter], bins = 50)
+plt.hist(theta_r[filter_p], weights=1./theta_r[filter_p], bins = 100)
+r_max = numpy.max(theta_r[filter_p]/numpy.sqrt(2))
+plt.xlim(0,r_max)
 plt.yscale('log')
 plt.ylabel('Area-normalized counts')
-plt.xlabel('Radial distance from beam center[degrees]')
+plt.xlabel('Angular distribution taken from beam center[degrees]')
+
+plt.figure ('radial plot[coordinates]')
+plt.hist(r_arr[filter_x], weights=1./r_arr[filter_x], bins = 100)
+r_max = numpy.max(r_arr[filter_x]/numpy.sqrt(2))
+plt.xlim(0,r_max)
+plt.yscale('log')
+plt.ylabel('Area-normalized counts')
+plt.xlabel('Arrival coordinate distribution taken from beam center[degrees]')
+
+
 
 plt.show()
 
