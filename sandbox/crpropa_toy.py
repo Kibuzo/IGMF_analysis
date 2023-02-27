@@ -9,12 +9,19 @@ toy_sim_dir='/media/kibuzo/80a7f701-fd11-4c0c-993a-76b511ae8b86/BackupHESS/BPL/C
 my_sim = _crpropa.simulation(1000, toy_sim_dir, '2data_final_largecone', '1e-08')
 theta_x = radians_to_degree(my_sim.data['Px'])
 theta_y = radians_to_degree(my_sim.data['Py'])
+theta_r = numpy.sqrt(theta_x**2+theta_y**2)
 filter = numpy.logical_and(numpy.abs(theta_x)<1, numpy.abs(theta_y)<1)
-plt.figure ('distribuzione spaziale')
+plt.figure ('Spatial distribution')
 plt.hist2d(theta_x[filter], theta_y[filter], bins = 100, norm = mpl.colors.LogNorm())
+plt.xlabel('$\\theta_{x}$[degrees]')
+plt.ylabel('$\\theta_{y}$[degrees]')
 plt.colorbar()
 plt.figure ('radial plot')
-plt.hist(numpy.sqrt((theta_x[filter]**2+theta_y[filter]**2)), bins = 30)
+plt.hist(theta_r[filter], weights=1./theta_r[filter], bins = 50)
+plt.yscale('log')
+plt.ylabel('Area-normalized counts')
+plt.xlabel('Radial distance from beam center[degrees]')
+
 plt.show()
 
 
