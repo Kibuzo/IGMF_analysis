@@ -119,6 +119,15 @@ class simulation:
         self.photon_mask = numpy.abs(table[3]) == 22
         self.cascade_mask = ~(table[2] == table[11])
         self.cascade_photon = self.photon_mask*self.cascade_mask
+        delta_0 = numpy.transpose((self.data['Px'], self.data['Py'], self.data['Pz']))
+        delta_1 = numpy.transpose((self.data['P0x'], self.data['P0y'], self.data['P0z']))
+        delta = numpy.array(numpy.arccos(numpy.clip(numpy.multiply 
+                            (delta_0, delta_1).sum(1), -1, 1)))
+        lambda_xx = numpy.sqrt((self.data['X1']-self.data['X0'])**2 + (self.data['Z1']-self.data['Z0'])**2
+                               + (self.data['Y1']-self.data['Y0'])**2)
+        self.dermer_theta = numpy.arcsin(
+            (lambda_xx/D) * numpy.cos(numpy.pi/2 - delta))
+
         '''
         self.px = table[8]
         self.py = table[9]
@@ -168,7 +177,7 @@ class simulation:
         # clip to limit the extrema in [-1,1], not mathematically required
         # but floating point approximations screw up the process
         # multiply to make a parallel calculation element-wise
-        # sum gieves the element-wise summation on the given axis
+        # sum gives the element-wise summation on the given axis
         delta = numpy.array(numpy.arccos(numpy.clip(numpy.multiply 
                             (delta_0, delta_1).sum(1), -1, 1)))
         lambda_xx = numpy.sqrt((self.data['X1']-self.data['X0'])**2 + (self.data['Z1']-self.data['Z0'])**2
