@@ -6,7 +6,7 @@ from math_.base import radians_to_degree
 
 toy_sim_dir='/media/kibuzo/80a7f701-fd11-4c0c-993a-76b511ae8b86/BackupHESS/BPL/Cone_final/TEMP'
 
-my_sim = _crpropa.simulation(1000, toy_sim_dir, '2data_final_largecone', '1e-08')
+my_sim = _crpropa.simulation(1000, toy_sim_dir, '2data_final_largecone', '1e-06')
 theta_x = radians_to_degree(my_sim.data['Px'])
 theta_y = radians_to_degree(my_sim.data['Py'])
 theta_r = numpy.sqrt(theta_x**2+theta_y**2)
@@ -17,13 +17,15 @@ filter_p = numpy.logical_and(numpy.abs(theta_x)<2, numpy.abs(theta_y)<2)
 filter_x = numpy.logical_and(numpy.abs(x_arr)<2, numpy.abs(y_arr)<2)
 
 plt.figure ('Angular distribution')
-plt.hist2d(theta_x[filter_p], theta_y[filter_p], bins = 100, norm = mpl.colors.LogNorm())
+plt.hist2d(theta_x[filter_p], theta_y[filter_p], bins = 100, 
+           norm = mpl.colors.LogNorm())
 plt.xlabel('$\\theta_{x}$[degrees]')
 plt.ylabel('$\\theta_{y}$[degrees]')
 plt.colorbar()
 
 plt.figure('Spatial Distribution')
-plt.hist2d(x_arr[filter_x], y_arr[filter_x], bins = 100, norm = mpl.colors.LogNorm())
+plt.hist2d(x_arr[filter_x], y_arr[filter_x], bins = 100, 
+           norm = mpl.colors.LogNorm())
 plt.xlabel('$\\theta_{x}$[degrees]')
 plt.ylabel('$\\theta_{y}$[degrees]')
 plt.colorbar()

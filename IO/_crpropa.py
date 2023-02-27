@@ -57,6 +57,11 @@ def _unite_small_files(n_files, file_path, prefix, B_rms, extension='.txt',\
         if os.path.exists(full_path):
             logging.info(f'reading from {full_path}...')
             small_file = numpy.loadtxt(os.path.join(file_path, file_name))
+            # Horrible hack to skip empty files
+            if os.stat(full_path).st_size == 30:
+                logging.warning(f'file {small_file} appears to be empty,'
+                                'skipping...')
+                continue
             length += len(numpy.unique(small_file[11]))
             if small_file.shape[0] > 0:
                 if large_file.ndim == 1:
