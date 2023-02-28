@@ -108,10 +108,10 @@ class simulation:
     no index = current, 0 = at source, 1 = at point of creation
     '''
 
-    def __init__(self, n_files, file_path, prefix, Brms): 
+    def __init__(self, n_files, file_path, prefix, Brms, overwrite = False): 
         ''' This has to improve. Create a dict and loop over its entries
         '''
-        table = load_files(n_files, file_path, prefix, Brms)
+        table = load_files(n_files, file_path, prefix, Brms, overwrite=overwrite)
         self.data = {CRPROPA_DICT_NAMES[i]: table[i] for i in range (CRPROPA_NUM)}
         #From EeV to GeV
         self.data['E'] = self.data['E']*1e9
@@ -136,26 +136,10 @@ class simulation:
                                + (self.data['Y1']-self.data['Y0'])**2)
         self.dermer_theta = numpy.arcsin(
             (lambda_xx/D) * numpy.cos(numpy.pi/2 - delta))
+        nphot = len(numpy.unique(self.data['SN0']))
+        logging.info(f'The simulations contains a total of {nphot} source photons')
 
-        '''
-        self.px = table[8]
-        self.py = table[9]
-        self.pz = table[10]
-        self.px0 = table[17]
-        self.py0 = table[18]
-        self.pz0 = table[19]
-        self.energy = table[4]*1e9 #From EeV to human measurements
-        self.idx = numpy.abs(table[3]) == 22
-        self.x0 = table[14]
-        self.y0 = table[15]
-        self.z0 = table[16]
-        self.x1 = table[23]
-        self.y1 = table[24]
-        self.z1 = table[25]
-        self.x = table[5]
-        self.y = table[6]
-        self.z = table[7]
-        '''
+
     
     def photon_mask(self):
         '''
@@ -223,7 +207,7 @@ class simulation:
             plt.hist(radial[radial<max_rad], weights=1./radial[radial<max_rad],
                      **kwargs)
             plt.yscale('log')
-            plt.ylabel('Area-normalized counts')
+            plt.ylabel('Area-weighted counts')
             plt.xlabel('Angular distance [degrees]')
         else:
             theta_x = radians_to_degree(self.data['Px'])
@@ -233,7 +217,7 @@ class simulation:
             plt.hist(theta_r[theta_r<max_rad], weights=1./theta_r[theta_r<max_rad],
                      **kwargs)
             plt.yscale('log')
-            plt.ylabel('Area-normalized counts')
+            plt.ylabel('Area-weighted counts')
             plt.xlabel('Angular distance taken from beam center[degrees]')
 
     def plot_map (self, selection = 'momentum'):
