@@ -113,6 +113,7 @@ class simulation:
         '''
         table = load_files(n_files, file_path, prefix, Brms, overwrite=overwrite)
         self.data = {CRPROPA_DICT_NAMES[i]: table[i] for i in range (CRPROPA_NUM)}
+        self.Brms = Brms
         #From EeV to GeV
         self.data['E'] = self.data['E']*1e9
         self.data['E1'] = self.data['E1']*1e9
@@ -202,7 +203,7 @@ class simulation:
         binning between the two versions.
         '''
         if dermer:
-            plt.figure('Radial profile (Dermer plot)')
+            plt.figure(f'Radial profile (Dermer plot) {self.Brms}G')
             radial = (radians_to_degree(self.dermer_theta))
             plt.hist(radial[radial<max_rad], weights=1./radial[radial<max_rad],
                      **kwargs)
@@ -213,7 +214,7 @@ class simulation:
             theta_x = radians_to_degree(self.data['Px'])
             theta_y = radians_to_degree(self.data['Py'])
             theta_r = numpy.sqrt(theta_x**2+theta_y**2)
-            plt.figure ('Radial profile')
+            plt.figure (f'Radial profile {self.Brms}G')
             plt.hist(theta_r[theta_r<max_rad], weights=1./theta_r[theta_r<max_rad],
                      **kwargs)
             plt.yscale('log')
