@@ -201,25 +201,28 @@ class simulation:
         ''' Create the radial profile of the incoming photons, defined a-la-dermer
         or not with the appropriate flag. max_rad is needed to have consistent
         binning between the two versions.
+        Returns hist values and bincentres (in this order)
         '''
         if dermer:
             plt.figure(f'Radial profile (Dermer plot) {self.Brms}G')
             radial = (radians_to_degree(self.dermer_theta))
-            plt.hist(radial[radial<max_rad], weights=1./radial[radial<max_rad],
+            hist = plt.hist(radial[radial<max_rad], weights=1./radial[radial<max_rad],
                      **kwargs)
             plt.yscale('log')
             plt.ylabel('Area-weighted counts')
             plt.xlabel('Angular distance [degrees]')
+            return (hist[0], (hist[1][1:]+hist[1][:1]/2))
         else:
             theta_x = radians_to_degree(self.data['Px'])
             theta_y = radians_to_degree(self.data['Py'])
             theta_r = numpy.sqrt(theta_x**2+theta_y**2)
             plt.figure (f'Radial profile {self.Brms}G')
-            plt.hist(theta_r[theta_r<max_rad], weights=1./theta_r[theta_r<max_rad],
+            hist = plt.hist(theta_r[theta_r<max_rad], weights=1./theta_r[theta_r<max_rad],
                      **kwargs)
             plt.yscale('log')
             plt.ylabel('Area-weighted counts')
             plt.xlabel('Angular distance taken from beam center[degrees]')
+            return (hist[0], (hist[1][1:]+hist[1][:1]/2))
 
     def plot_map (self, selection = 'momentum'):
         ''' 2d theta² plot of the map of incoming photons.
