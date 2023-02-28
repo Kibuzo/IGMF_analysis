@@ -121,8 +121,15 @@ class simulation:
         self.photon_mask = numpy.abs(table[3]) == 22
         self.cascade_mask = ~(table[2] == table[11])
         self.cascade_photon = self.photon_mask*self.cascade_mask
+        # Demer 11 variables
+        # Create the vectors to get the angle delta
         delta_0 = numpy.transpose((self.data['Px'], self.data['Py'], self.data['Pz']))
         delta_1 = numpy.transpose((self.data['P0x'], self.data['P0y'], self.data['P0z']))
+        # delta from the dot product:
+        # clip to limit the extrema in [-1,1], not mathematically required
+        # but floating point approximations screw up the process
+        # multiply to make a parallel calculation element-wise
+        # sum gives the element-wise summation on the given axis
         delta = numpy.array(numpy.arccos(numpy.clip(numpy.multiply 
                             (delta_0, delta_1).sum(1), -1, 1)))
         lambda_xx = numpy.sqrt((self.data['X1']-self.data['X0'])**2 + (self.data['Z1']-self.data['Z0'])**2
@@ -170,25 +177,9 @@ class simulation:
         defined in Dermer et al. (2011) paper
         https://ui.adsabs.harvard.edu/abs/2011ApJ...733L..21D/abstract.
         '''
-        logging.info('Performing an angular selection based on Dermer11 paper'\
-                        f'of {angle} degrees')
-        # Create the vectors to get the angle delta
-        delta_0 = numpy.transpose((self.data['Px'], self.data['Py'], self.data['Pz']))
-        delta_1 = numpy.transpose((self.data['P0x'], self.data['P0y'], self.data['P0z']))
-        # delta from the dot product:
-        # clip to limit the extrema in [-1,1], not mathematically required
-        # but floating point approximations screw up the process
-        # multiply to make a parallel calculation element-wise
-        # sum gives the element-wise summation on the given axis
-        delta = numpy.array(numpy.arccos(numpy.clip(numpy.multiply 
-                            (delta_0, delta_1).sum(1), -1, 1)))
-        lambda_xx = numpy.sqrt((self.data['X1']-self.data['X0'])**2 + (self.data['Z1']-self.data['Z0'])**2
-                               + (self.data['Y1']-self.data['Y0'])**2)
-        # The following is stored in the class for future usage (e.g.: plotting)
-        self.dermer_theta = numpy.arcsin(
-            (lambda_xx/D) * numpy.cos(numpy.pi/2 - delta))
         # Define the hit condition to filter photons based on the angle
-        self.dermer_cut = numpy.sqrt(self.dermer_theta*(180./numpy.pi)**2) < angle
+        self.dermer_cut = numpy.sqrt(self.dermer_theta*(180./numpy.pi)**2)\
+                < angle
 
     def momentum_cut(self, angle=0.3):
         ''' Utility function to cut the photons based on the angle as
@@ -222,6 +213,10 @@ class simulation:
                  < half_angle
     
     def plot_radial_profile (self, max_rad = 2, dermer = False, **kwargs):
+        ''' Create the radial profile of the incoming photons, defined a-la-dermer
+        or not with the appropriate flag. max_rad is needed to have consistent
+        binning between the two versions.
+        '''
         if dermer:
             plt.figure('Radial profile (Dermer plot)')
             radial = (radians_to_degree(self.dermer_theta))
@@ -240,9 +235,6 @@ class simulation:
             plt.yscale('log')
             plt.ylabel('Area-normalized counts')
             plt.xlabel('Angular distance taken from beam center[degrees]')
-
-
-
 
     def plot_map (self, selection = 'momentum'):
         ''' 2d theta² plot of the map of incoming photons.
