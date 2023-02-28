@@ -115,6 +115,8 @@ class simulation:
         self.data = {CRPROPA_DICT_NAMES[i]: table[i] for i in range (CRPROPA_NUM)}
         #From EeV to GeV
         self.data['E'] = self.data['E']*1e9
+        self.data['E1'] = self.data['E1']*1e9
+        self.data['E0'] = self.data['E0']*1e9
         logging.warning('energies are now in GeV')
         self.photon_mask = numpy.abs(table[3]) == 22
         self.cascade_mask = ~(table[2] == table[11])
@@ -218,6 +220,27 @@ class simulation:
         '''
         self.hit = radians_to_degree(xyoffset_to_r(self.data['X'], self.data['Y']))\
                  < half_angle
+    
+    def plot_radial_profile (self, max_rad = 2, dermer = False, **kwargs):
+        if dermer:
+            plt.figure('Radial profile (Dermer plot)')
+            radial = (radians_to_degree(self.dermer_theta))
+            plt.hist(radial[radial<max_rad], weights=1./radial[radial<max_rad],
+                     **kwargs)
+            plt.yscale('log')
+            plt.ylabel('Area-normalized counts')
+            plt.xlabel('Angular distance [degrees]')
+        else:
+            theta_x = radians_to_degree(self.data['Px'])
+            theta_y = radians_to_degree(self.data['Py'])
+            theta_r = numpy.sqrt(theta_x**2+theta_y**2)
+            plt.figure ('Radial profile')
+            plt.hist(theta_r[theta_r<max_rad], weights=1./theta_r[theta_r<max_rad],
+                     **kwargs)
+            plt.yscale('log')
+            plt.ylabel('Area-normalized counts')
+            plt.xlabel('Angular distance taken from beam center[degrees]')
+
 
 
 
